@@ -7,12 +7,14 @@ class Tower {
         this.fireRate = 1000; // ms
         this.lastFired = 0;
         this.level = 1;
+        this.damage = TOWER_DAMAGE; // Añadimos la propiedad damage
     }
 
     upgrade() {
         this.level++;
         this.range += GRID_SIZE;
         this.fireRate *= 0.8;
+        this.damage *= 1.2; // Aumentamos el daño en un 20% con cada mejora
     }
 
     canFire(now) {

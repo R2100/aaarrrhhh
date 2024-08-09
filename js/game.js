@@ -174,15 +174,14 @@ class TowerDefenseGame {
         this.towers.forEach(tower => {
             if (tower.canFire(currentTime)) {
                 const target = tower.findTarget(this.enemies);
-               // console.log(target);
-                //console.log(tower);
                 if (target) {
-                    target.health -= tower.damage;
-                    console.log(`vida: ${target.health} resto: ${tower.damage}`);
+                    target.health -= tower.damage; // Usamos tower.damage en lugar de this.damage
+                    console.log(`Enemigo atacado. Vida restante: ${target.health}`);
                     if (target.health <= 0) {
                         const index = this.enemies.indexOf(target);
                         this.enemies.splice(index, 1);
                         this.money += 20;
+                        console.log('Enemigo eliminado');
                     }
                     tower.lastFired = currentTime;
                 }

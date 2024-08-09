@@ -4,20 +4,23 @@ class Path {
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
         this.gridSize = gridSize;
+        this.margin = 20 * gridSize; // 20 celdas de margen
+        this.cornerMargin = 30 * gridSize; // 30 celdas de margen en las esquinas
         this.points = [];
         this.generateSmoothPath();
     }
 
     generateSmoothPath() {
-        const targetLength = 1800;
+        const targetLength = 2200;
         let currentLength = 0;
         const minSegmentLength = 5;
 
-        // Elegir un punto de inicio aleatorio en un borde
-        let currentPoint = this.getRandomBorderPoint();
-        this.points.push(currentPoint);
+        // Elegir un punto de inicio y dirección inicial
+        let { startPoint, initialDirection } = this.getStartPointAndDirection();
+        this.points.push(startPoint);
 
-        let lastDirection = null;
+        let currentPoint = startPoint;
+        let lastDirection = initialDirection;
 
         while (currentLength < targetLength) {
             let direction = this.getNextDirection(lastDirection);
@@ -25,8 +28,12 @@ class Path {
             
             let nextPoint = this.extendPath(currentPoint, direction, segmentLength);
             
-            // Si el nuevo punto está fuera de los límites, intentar otra dirección
-            if (this.isOutOfBounds(nextPoint)) {
+            // Ajustar el punto si está dentro del margen, excepto si es el último punto
+            if (currentLength + this.getDistance(currentPoint, nextPoint) < targetLength) {
+                nextPoint = this.adjustPointToMargin(nextPoint);
+            }
+            
+            if (this.isOutOfBounds(nextPoint) || this.isSamePoint(currentPoint, nextPoint)) {
                 continue;
             }
 
@@ -41,6 +48,43 @@ class Path {
         this.points.push(endPoint);
     }
 
+    getStartPointAndDirection() {
+        const side = Math.floor(Math.random() * 4);
+        let startPoint, initialDirection;
+
+        switch(side) {
+            case 0: // Top
+                startPoint = { x: this.cornerMargin + Math.floor(Math.random() * (this.gameWidth - 2 * this.cornerMargin) / this.gridSize) * this.gridSize, y: 0 };
+                initialDirection = { dx: 0, dy: 1 };
+                break;
+            case 1: // Right
+                startPoint = { x: this.gameWidth - this.gridSize, y: this.cornerMargin + Math.floor(Math.random() * (this.gameHeight - 2 * this.cornerMargin) / this.gridSize) * this.gridSize };
+                initialDirection = { dx: -1, dy: 0 };
+                break;
+            case 2: // Bottom
+                startPoint = { x: this.cornerMargin + Math.floor(Math.random() * (this.gameWidth - 2 * this.cornerMargin) / this.gridSize) * this.gridSize, y: this.gameHeight - this.gridSize };
+                initialDirection = { dx: 0, dy: -1 };
+                break;
+            case 3: // Left
+                startPoint = { x: 0, y: this.cornerMargin + Math.floor(Math.random() * (this.gameHeight - 2 * this.cornerMargin) / this.gridSize) * this.gridSize };
+                initialDirection = { dx: 1, dy: 0 };
+                break;
+        }
+
+        return { startPoint, initialDirection };
+    }
+
+    adjustPointToMargin(point) {
+        return {
+            x: Math.max(this.margin, Math.min(this.gameWidth - this.margin, point.x)),
+            y: Math.max(this.margin, Math.min(this.gameHeight - this.margin, point.y))
+        };
+    }
+
+    isSamePoint(point1, point2) {
+        return point1.x === point2.x && point1.y === point2.y;
+    }
+
     getNextDirection(lastDirection) {
         const directions = [
             {dx: 0, dy: -1},  // Up
@@ -49,30 +93,12 @@ class Path {
             {dx: -1, dy: 0}   // Left
         ];
 
-        if (!lastDirection) {
-            return directions[Math.floor(Math.random() * directions.length)];
-        }
-
         // Filtrar direcciones que no resulten en un giro de 180 grados
         const validDirections = directions.filter(dir => 
             !(dir.dx === -lastDirection.dx && dir.dy === -lastDirection.dy)
         );
 
         return validDirections[Math.floor(Math.random() * validDirections.length)];
-    }
-
-    getRandomBorderPoint() {
-        const side = Math.floor(Math.random() * 4);
-        switch(side) {
-            case 0: // Top
-                return {x: Math.floor(Math.random() * this.gameWidth / this.gridSize) * this.gridSize, y: 0};
-            case 1: // Right
-                return {x: this.gameWidth - this.gridSize, y: Math.floor(Math.random() * this.gameHeight / this.gridSize) * this.gridSize};
-            case 2: // Bottom
-                return {x: Math.floor(Math.random() * this.gameWidth / this.gridSize) * this.gridSize, y: this.gameHeight - this.gridSize};
-            case 3: // Left
-                return {x: 0, y: Math.floor(Math.random() * this.gameHeight / this.gridSize) * this.gridSize};
-        }
     }
 
     extendPath(start, direction, length) {
@@ -124,5 +150,10 @@ class Path {
         ctx.beginPath();
         ctx.arc(this.points[this.points.length - 1].x, this.points[this.points.length - 1].y, this.gridSize / 2, 0, Math.PI * 2);
         ctx.fill();
+
+        // Dibujar el área de margen (para depuración)
+        ctx.strokeStyle = 'rgba(0, 0, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(this.margin, this.margin, this.gameWidth - 2 * this.margin, this.gameHeight - 2 * this.margin);
     }
 }
