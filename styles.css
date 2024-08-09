@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    background-image: url(im/bg.jpg);
+}
+
+#game-board {
+    width: 80%;
+    height: 100%;
+    background-color: #f0f0f0;
+    opacity: 0.7;
+}
+
+#controls {
+    width: 20%;
+    height: 100%;
+    background-color: #e0e0e0;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    opacity: 0.9;
+}
+
+#game-info {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#properties {
+    margin-top: 20px;
+}
+
+canvas {
+    display: block;
+}
